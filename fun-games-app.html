@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بازی‌های زوج</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f4ff;
+            color: #333;
+            padding: 0;
+            margin: 0;
+            direction: rtl;
+            overflow-x: hidden;
+            transition: background-color 0.3s;
+        }
+        
+        header {
+            background-color: #8e44ad;
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 80px auto 100px;
+            padding: 15px;
+        }
+        
+        .game-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .game-btn {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .game-btn:hover, .game-btn:focus {
+            background-color: #8e44ad;
+            transform: translateY(-2px);
+        }
+        
+        .game-btn.active {
+            background-color: #6c3483;
+            transform: scale(0.98);
+        }
+        
+        .game-content {
+            display: none;
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            min-height: 300px;
+            position: relative;
+        }
+        
+        .dice-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            perspective: 600px;
+        }
+        
+        .dice {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+        
+        .dice-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #9b59b6;
+            border: 2px solid #8e44ad;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            border-radius: 15px;
+        }
+        
+        .dice.rolling {
+            animation: roll 1s ease;
+        }
+        
+        @keyframes roll {
+            0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            25% { transform: rotateX(180deg) rotateY(90deg) rotateZ(45deg); }
+            50% { transform: rotateX(270deg) rotateY(180deg) rotateZ(90deg); }
+            75% { transform: rotateX(180deg) rotateY(270deg) rotateZ(135deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(180deg); }
+        }
+        
+        .card {
+            background-color: #9b59b6;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 400px;
+            margin: 20px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 16px;
+            line-height: 1.6;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn {
+            background-color: #8e44ad;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .action-btn:hover, .action-btn:focus {
+            background-color: #6c3483;
+            transform: translateY(-2px);
+        }
+        
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .back-btn {
+            background-color: transparent;
+            color: #8e44ad;
+            border: 1px solid #8e44ad;
+            border-radius: 50px;
+            padding: 8px 20px;
+            margin-top: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover, .back-btn:focus {
+            background-color: #f0e6f6;
+        }
+        
+        .card-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .truth-dare-btns {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .truth-btn, .dare-btn {
+            background-color: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .truth-btn {
+            background-color: #3498db;
+        }
+        
+        .dare-btn {
+            background-color: #e74c3c;
+        }
+        
+        .truth-btn:hover, .truth-btn:focus {
+            background-color: #2980b9;
+        }
+        
+        .dare-btn:hover, .dare-btn:focus {
+            background-color: #c0392b;
+        }
+        
+        footer {
+            background-color: #8e44ad;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 12px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .game-content {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        
+        .dark-mode .back-btn {
+            color: #bb86fc;
+            border-color: #bb86fc;
+        }
+        
+        .dark-mode .back-btn:hover, .dark-mode .back-btn:focus {
+            background-color: rgba(187, 134, 252, 0.1);
+        }
+        
+        .dark-mode header, .dark-mode footer {
+            background-color: #121212;
+        }
+        
+        .dark-mode .game-btn {
+            background-color: #bb86fc;
+            color: #121212;
+        }
+        
+        .dark-mode .game-btn:hover, .dark-mode .game-btn:focus {
+            background-color: #a370f7;
+        }
+        
+        .dark-mode .game-btn.active {
+            background-color: #7c4dff;
+        }
+        
+        .dark-mode .card {
+            background-color: #2d2d2d;
+        }
+        
+        .dark-mode .dice-face {
+            background-color: #bb86fc;
+            border-color: #7c4dff;
+            color: #121212;
+        }
+        
+        .dark-mode .action-btn {
+            background-color: #bb86fc;
+            color: #121212;
+        }
+        
+        .dark-mode .action-btn:hover, .dark-mode .action-btn:focus {
+            background-color: #a370f7;
+        }
+        
+        .dark-mode .truth-btn {
+            background-color: #64b5f6;
+        }
+        
+        .dark-mode .dare-btn {
+            background-color: #e57373;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 101;
+        }
+        
+        @media (max-width: 480px) {
+            .game-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .dice-container {
+                width: 120px;
+                height: 120px;
+            }
+        }
+        
+        /* For PWA */
+        .install-banner {
+            display: none;
+            background-color: #8e44ad;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: fixed;
+            bottom: 60px;
+            left: 0;
+            right: 0;
+            z-index: 99;
+        }
+        
+        .install-btn {
+            background-color: white;
+            color: #8e44ad;
+            border: none;
+            border-radius: 50px;
+            padding: 5px 15px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        .close-banner {
+            background: none;
+            border: none;
+            color: white;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>بازی‌های زوج</h1>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+    </header>
+    
+    <div class="container">
+        <div class="game-selector">
+            <button class="game-btn" data-game="passion-dice">تاس شهوت</button>
+            <button class="game-btn" data-game="playful-massage">ماساژ بازیگوشانه</button>
+            <button class="game-btn" data-game="challenge-cards">کارت چالش شیطونی</button>
+            <button class="game-btn" data-game="truth-dare">جرات یا حقیقت</button>
+        </div>
+        
+        <!-- تاس شهوت -->
+        <div class="game-content" id="passion-dice">
+            <h2>تاس شهوت</h2>
+            <div class="dice-container">
+                <div class="dice" id="passionDice">
+                    <div class="dice-face">?</div>
+                </div>
+            </div>
+            <div class="card" id="passion-result">
+                <div class="card-header">دستورالعمل شهوانی</div>
+                <div id="passion-text">برای شروع، تاس را بینداز...</div>
+            </div>
+            <button class="action-btn" id="rollPassionDice">انداختن تاس</button>
+            <button class="back-btn" id="passionBackBtn">بازگشت</button>
+        </div>
+        
+        <!-- ماساژ بازیگوشانه -->
+        <div class="game-content" id="playful-massage">
+            <h2>ماساژ بازیگوشانه</h2>
+            <div class="card" id="massage-card">
+                <div class="card-header">دستورالعمل ماساژ</div>
+                <div id="massage-text">برای دریافت دستورالعمل ماساژ، دکمه زیر را لمس کنید.</div>
+            </div>
+            <button class="action-btn" id="newMassageBtn">دستورالعمل جدید</button>
+            <button class="back-btn" id="massageBackBtn">بازگشت</button>
+        </div>
+        
+        <!-- کارت چالش شیطونی -->
+        <div class="game-content" id="challenge-cards">
+            <h2>کارت چالش شیطونی</h2>
+            <div class="card" id="challenge-card">
+                <div class="card-header">چالش شیطونی</div>
+                <div id="challenge-text">برای دریافت یک چالش جدید، دکمه زیر را لمس کنید.</div>
+            </div>
+            <button class="action-btn" id="newChallengeBtn">چالش جدید</button>
+            <button class="back-btn" id="challengeBackBtn">بازگشت</button>
+        </div>
+        
+        <!-- جرات یا حقیقت -->
+        <div class="game-content" id="truth-dare">
+            <h2>جرات یا حقیقت</h2>
+            <div class="truth-dare-btns">
+                <button class="truth-btn" id="truthBtn">حقیقت</button>
+                <button class="dare-btn" id="dareBtn">جرات</button>
+            </div>
+            <div class="card" id="truth-dare-card">
+                <div class="card-header" id="td-header">انتخاب کنید</div>
+                <div id="td-text">حقیقت یا جرات را انتخاب کنید...</div>
+            </div>
+            <button class="back-btn" id="tdBackBtn">بازگشت</button>
+        </div>
+    </div>
+    
+    <div class="install-banner" id="installBanner">
+        این برنامه را به صفحه اصلی خود اضافه کنید
+        <button class="install-btn" id="installBtn">نصب</button>
+        <button class="close-banner" id="closeBanner">×</button>
+    </div>
+    
+    <footer>
+        برنامه بازی‌های زوج &copy; ۱۴۰۴
+    </footer>
+    
+    <script>
+        // داده‌های بازی
+        const gameData = {
+            passionDice: [
+                "بوسه طولانی روی گردن شریک.",
+                "به آرامی دستان شریک را از زیر لباسش لمس کن.",
+                "یک حرف شهوانی در گوش شریک نجوا کن.",
+                "برای چند دقیقه هیچ چیزی نگو و فقط از لب‌ها و زبانت استفاده کن.",
+                "لمس پشت شریک به آرامی با نوک انگشتان.",
+                "برای شریک یک پیام تحریک‌آمیز بنویس و آن را بخوان.",
+                "برای لحظه‌ای شریک را به آرامی در آغوش بگیر و از بدنش لذت ببر.",
+                "فقط با زبانت بخش خاصی از بدن شریک رو لمس کن.",
+                "به صورت ملایم لب‌های شریک رو فشار بده و آرام آرام بوسه بزن.",
+                "یک لمس ملایم روی ران‌های شریک انجام بده.",
+                "به آرامی یک نقطه حساس بدن شریک رو لیس بزن.",
+                "از شریک بخواه که چشمانش رو ببندد و اجازه بده که تو تمام بدنش رو لمس کنی.",
+                "برای ۲ دقیقه فقط نفس‌های گرم رو روی بدن شریک بینداز.",
+                "دستان شریک رو در دستت بگیر و شروع به ماساژ ملایم کن.",
+                "از شریک بخواه که لحظه‌ای از جسم خود لذت ببرد بدون هیچ حرکت.",
+                "حرکت‌های آهسته با زبان روی گردن شریک.",
+                "از شریک بخواه که با دستانش بدن تو رو لمس کند.",
+                "یک بوسه طولانی و آرام روی لب‌های شریک انجام بده.",
+                "به آرامی شانه‌های شریک را ماساژ بده.",
+                "یک جمله تحریک‌آمیز با صدای ملایم برای شریک بگو."
+            ],
+            playfulMassage: [
+                "شروع به ماساژ گردن شریک به آرامی با استفاده از انگشتان.",
+                "با استفاده از نوک انگشتانت به آرامی شانه‌ها و پشت شریک رو ماساژ بده.",
+                "دست‌های خود رو روی ران‌های شریک قرار بده و فشار آهسته‌ای وارد کن.",
+                "از حرکات دایره‌ای روی قسمت پایین کمر شریک استفاده کن.",
+                "با استفاده از دو دست، ماساژ ملایمی روی سینه‌های شریک انجام بده.",
+                "از نوک انگشتان برای ماساژ آرام گردن شریک استفاده کن.",
+                "از روغن ماساژ برای افزایش احساس لذت در بدن شریک استفاده کن.",
+                "به آرامی انگشتانت رو از پشت شانه تا کمر شریک بکش.",
+                "برای چند دقیقه از نفس‌های گرم روی بدن شریک استفاده کن.",
+                "با استفاده از دست‌ها، قسمت پایین پشت شریک رو ماساژ بده.",
+                "انگشتان خود رو به آرامی روی ساق پاهای شریک بکش.",
+                "با حرکات آرام و ملایم ماساژ، به شانه‌ها و گردن شریک حرکت بده.",
+                "از روغن ماساژ برای ماساژ کف دست‌ها و پاهای شریک استفاده کن.",
+                "انگشتانت رو به آرامی به قسمت‌های حساس بدن شریک بکش.",
+                "از لمس‌های ملایم و آرام، پاهای شریک رو ماساژ بده.",
+                "به صورت ملایم، سینه‌های شریک رو لمس و ماساژ بده.",
+                "دستان شریک رو به آرامی بگیر و انگشت به انگشت اون‌ها رو ماساژ بده.",
+                "شروع به ماساژ قسمت‌های حساس بدن شریک با تمرکز بیشتر روی هر نقطه.",
+                "از لمس‌های ملایم روی گردن و شانه‌های شریک استفاده کن.",
+                "یک ماساژ آرام روی صورت شریک انجام بده."
+            ],
+            challengeCards: [
+                "یک بوسه طولانی از شریک بگیر.",
+                "شریک باید با زبانت قسمتی از بدنت رو لمس کنه.",
+                "یک لمس کوتاه و تحریک‌آمیز به شانه یا گردن شریک بده.",
+                "از شریک بخواه که با چشمان بسته بدن تو رو لمس کنه.",
+                "برای چند دقیقه بدون هیچ حرفی فقط یکدیگر رو لمس کنید.",
+                "شریک باید یک جمله تحریک‌آمیز بگوید و تو باید آن را عملی کنی.",
+                "فقط با انگشتانت بدن شریک رو لمس کن و هیچ حرفی نزن.",
+                "شریک باید برای ۳۰ ثانیه بدن تو رو تنها با دستانش لمس کنه.",
+                "از شریک بخواه که بخش حساس بدنت رو بوسه کنه.",
+                "یک حرکت تحریک‌آمیز روی بدن شریک انجام بده و اجازه بده که اون هم تلافی کنه.",
+                "با شریک یک بوسه آتشین داشته باش.",
+                "به شریک بگو که کجا بیشتر دوست داری لمس بشی.",
+                "یک جمله شهوانی در گوش شریک بگو.",
+                "از شریک بخواه که دست‌هایش رو پشت سرش ببندد و تو بدنش رو لمس کنی.",
+                "برای چند دقیقه فقط بوسه و لمس‌هایی آرام و نرم داشته باشید.",
+                "شریک باید لمس بدن تو رو با زبانش شروع کنه.",
+                "یک قسمت از بدن شریک رو به آرامی فشار بده.",
+                "از شریک بخواه که بدون حرکت بدنش رو لمس کنی.",
+                "یک پیام شهوانی برای شریک بنویس و آن را برایش بخوان.",
+                "از شریک بخواه که تو را در حالت آرامش قرار بده و بدنش رو لمس کن."
+            ],
+            truthDare: {
+                truth: [
+                    "چه چیزی بیش از همه تو رو تحریک می‌کنه؟",
+                    "آیا تا به حال در موقعیت‌های مشابه هیجان‌انگیز قرار گرفتی؟",
+                    "از چه نوع لمس‌هایی بیشتر لذت می‌بری؟",
+                    "کدوم نقطه بدن شریک بیشتر شما رو تحریک می‌کنه؟",
+                    "آیا همیشه از لمس‌های بازیگوشانه لذت می‌بری؟",
+                    "چه نوع حرکات شهوانی رو بیشتر دوست داری؟",
+                    "آیا از لمس‌های خفیف و نرم بیشتر لذت می‌بری؟",
+                    "به نظر تو بهترین قسمت بدن من کجاست؟",
+                    "آیا از بازی‌های شهوانی هیجان‌انگیز لذت می‌بری؟",
+                    "آیا تا به حال در وضعیت شهوانی خاصی قرار گرفتی که برات خاطره‌انگیز باشه؟"
+                ],
+                dare: [
+                    "یک بوسه آتشین به لب‌های من بده.",
+                    "یک حرکت شهوانی روی بدن من انجام بده.",
+                    "برای ۲ دقیقه فقط با زبان بدنم رو لمس کن.",
+                    "یک بوسه طولانی و آرام به گردن من بزن.",
+                    "یک جمله تحریک‌آمیز در گوش من بگو.",
+                    "اجازه بده بدنم رو با انگشتانم لمس کنم.",
+                    "چند دقیقه فقط با دست‌هایم بدن تو رو لمس کنم.",
+                    "از شریک بخواه که بدن تو رو با زبان لمس کنه.",
+                    "با زبان و دستانت بدن من رو لمس کن.",
+                    "حاضر هستی برای چند دقیقه فقط با زبان خود بدن من رو لمس کنی؟"
+                ]
+            }
+        };
+        
+        // متغیرهای جهانی
+        let isDarkMode = false;
+        let deferredPrompt;
+        
+        // انتخاب عناصر DOM
+        const gameButtons = document.querySelectorAll('.game-btn');
+        const gameContents = document.querySelectorAll('.game-content');
+        const themeToggle = document.getElementById('themeToggle');
+        const installBanner = document.getElementById('installBanner');
+        const installBtn = document.getElementById('installBtn');
+        const closeBanner = document.getElementById('closeBanner');
+        
+        // انیمیشن تاس
+        const passionDice = document.getElementById('passionDice');
+        const rollPassionDice = document.getElementById('rollPassionDice');
+        const passionText = document.getElementById('passion-text');
+        
+        // دکمه‌های بازگشت
+        const passionBackBtn = document.getElementById('passionBackBtn');
+        const massageBackBtn = document.getElementById('massageBackBtn');
+        const challengeBackBtn = document.getElementById('challengeBackBtn');
+        const tdBackBtn = document.getElementById('tdBackBtn');
+        
+        // دکمه‌های اقدام
+        const newMassageBtn = document.getElementById('newMassageBtn');
+        const newChallengeBtn = document.getElementById('newChallengeBtn');
+        const truthBtn = document.getElementById('truthBtn');
+        const dareBtn = document.getElementById('dareBtn');
+        
+        // متن‌های نتیجه
+        const massageText = document.getElementById('massage-text');
+        const challengeText = document.getElementById('challenge-text');
+        const tdText = document.getElementById('td-text');
+        const tdHeader = document.getElementById('td-header');
+        
+        // تابع تغییر حالت
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            isDarkMode = !isDarkMode;
+            themeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+        
+        // انتخاب بازی
+        gameButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const gameId = button.getAttribute('data-game');
+                gameContents.forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(gameId).style.display = 'block';
+                window.scrollTo(0, 0);
+            });
+        });
+        
+        // بازگشت به منو
+        function backToMenu() {
+            gameContents.forEach(content => {
+                content.style.display = 'none';
+            });
+        }
+        
+        passionBackBtn.addEventListener('click', backToMenu);
+        massageBackBtn.addEventListener('click', backToMenu);
+        challengeBackBtn.addEventListener('click', backToMenu);
+        tdBackBtn.addEventListener('click', backToMenu);
+        
+        // تاس شهوت
+        rollPassionDice.addEventListener('click', () => {
+            passionDice.classList.add('rolling');
+            setTimeout(() => {
+                passionDice.classList.remove('rolling');
+                const randomNumber = Math.floor(Math.random() * gameData.passionDice.length);
+                document.querySelector('.dice-face').textContent = (randomNumber % 6) + 1;
+                passionText.textContent = gameData.passionDice[random
